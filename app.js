@@ -1,5 +1,17 @@
 const grid = document.getElementById("grid");
 const all = {};
+// Values that change between visits (or within one). They're shown but left out
+// of the fingerprint, so it stays the same across reloads. A section title here
+// excludes the whole section.
+const volatile = new Set([
+  "Browser.Referrer", "Browser.History length",
+  "Screen & window.Viewport", "Screen & window.Orientation",
+  "Locale & time.Local time",
+  "Network & power.Online", "Network & power.Connection type", "Network & power.Downlink (approx.)",
+  "Network & power.Round-trip (approx.)", "Network & power.Battery", "Network & power.Charging",
+  "Capabilities.Storage quota",
+  "What the server sees",
+]);
 
 function section(title, rows, wide) {
   const s = document.createElement("section");
@@ -8,9 +20,14 @@ function section(title, rows, wide) {
   const dl = document.createElement("dl");
   for (const [k, v] of Object.entries(rows)) {
     const val = v === undefined || v === null || v === "" ? "n/a" : String(v);
-    all[`${title}.${k}`] = val;
     const dt = document.createElement("dt"); dt.textContent = k;
     const dd = document.createElement("dd"); dd.textContent = val;
+    if (volatile.has(title) || volatile.has(`${title}.${k}`)) {
+      dd.className = "volatile";
+      dd.title = "Not in fingerprint (changes between visits)";
+    } else {
+      all[`${title}.${k}`] = val;
+    }
     dl.append(dt, dd);
   }
   s.append(dl);
