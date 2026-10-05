@@ -15,6 +15,11 @@ const volatile = new Set([
 
 // Privacy ratings (from ratings.js). They never touch `all`, so the fingerprint is unaffected.
 const STATUS = { R: "Red: exposes personal data", A: "Amber: could be tightened", G: "Green: fine as is" };
+const MEANING = {
+  R: "Personal information is exposed, or security is not tight. Fix these first.",
+  A: "Not a leak by itself, but it could be optimised to protect your privacy and data.",
+  G: "Safe, and should stay as it is.",
+};
 const ORDER = "GAR";
 const ctx = { browser: navigator.brave ? "Brave" : browserName(navigator.userAgent), language: navigator.language };
 const rated = [];
@@ -56,8 +61,9 @@ function section(title, rows) {
     const res = rate(title, k, val, ctx);
     dt.prepend(badge(res.status, STATUS[res.status]));
     const note = ratedNote(res);
-    rated.push({ title, label: k, status: res.status, dt });
+    rated.push({ title, label: k, status: res.status, dt, section: s });
     if (ORDER.indexOf(res.status) > ORDER.indexOf(worst)) worst = res.status;
+    for (const el of [dt, dd, note]) el.classList.add(`row-${res.status}`);
     dl.append(dt, dd, note);
   }
   s.querySelector("h2").append(badge(worst, `Worst rating in this card: ${STATUS[worst]}`));
@@ -65,15 +71,35 @@ function section(title, rows) {
   grid.append(s);
 }
 
-// Counts per status, plus a jump link to every Red row.
+// Show or hide rows by rating, and hide cards left with no visible rows.
+const shown = { R: true, A: true, G: true };
+function applyFilter() {
+  for (const st of "RAG") grid.classList.toggle(`hide-${st}`, !shown[st]);
+  const sections = new Set(rated.map(x => x.section));
+  for (const sec of sections) sec.hidden = !rated.some(x => x.section === sec && shown[x.status]);
+  document.getElementById("nothing").hidden = "RAG".split("").some(st => shown[st]);
+}
+
+// The legend: one toggle per rating, with its meaning and count; plus a jump link to every Red row.
 function scorecard() {
   const el = document.getElementById("score");
-  const count = s => rated.filter(x => x.status === s).length;
-  el.innerHTML = `<p class="counts"></p>`;
-  for (const s of "RAG") {
-    const c = document.createElement("span");
-    c.append(badge(s), ` ${count(s)} ${STATUS[s].split(":")[0]}`);
-    el.firstChild.append(c);
+  const count = st => rated.filter(x => x.status === st).length;
+  el.innerHTML = `<h2>What the ratings mean</h2><div class="legend"></div>
+    <p class="hint">Switch a rating off to hide those rows, for example to see only Amber and Red.</p>
+    <p id="nothing" hidden>No rating is switched on, so nothing is shown.</p>`;
+  for (const st of "RAG") {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = `toggle toggle-${st}`;
+    b.setAttribute("aria-pressed", "true");
+    b.innerHTML = `<span class="toggle-head"></span><span class="toggle-text"></span>`;
+    b.firstChild.append(badge(st), ` ${STATUS[st].split(":")[0]} (${count(st)})`);
+    b.lastChild.textContent = MEANING[st];
+    b.onclick = () => {
+      shown[st] = !shown[st];
+      b.setAttribute("aria-pressed", String(shown[st]));
+      applyFilter();
+    };
+    el.querySelector(".legend").append(b);
   }
   const reds = rated.filter(x => x.status === "R");
   if (!reds.length) return;
@@ -84,6 +110,7 @@ function scorecard() {
     a.type = "button"; a.className = "jump";
     a.textContent = `${x.title}: ${x.label}`;
     a.onclick = () => {
+      if (!shown.R) el.querySelector(".toggle-R").click();
       x.dt.scrollIntoView({ behavior: "smooth", block: "center" });
       x.dt.classList.remove("flash"); void x.dt.offsetWidth; x.dt.classList.add("flash");
     };

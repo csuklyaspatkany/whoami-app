@@ -87,7 +87,22 @@ dt.flash { animation: flash 1.6s ease-out; }
 footer p.note { max-width: 70ch; margin: 8px auto; text-align: left; color: var(--ink);
                 background: var(--parchment); padding: 6px 10px; border-left: 4px solid; }
 .score { text-align: center; margin: -12px 0 24px; color: var(--scroll-text); }
-.score .counts { display: flex; flex-wrap: wrap; justify-content: center; gap: 18px; margin: 0 0 8px; font-size: 17px; }
+.score .legend { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; text-align: left; }
+.toggle {
+  font: inherit; color: var(--ink); cursor: pointer; text-align: left; padding: 10px 12px;
+  background: radial-gradient(ellipse at center, var(--parchment) 55%, var(--parchment-edge));
+  border: 2px solid; border-radius: 4px; display: flex; flex-direction: column; gap: 4px;
+  box-shadow: inset 0 0 18px rgba(120, 70, 20, .45), 0 2px 6px rgba(0, 0, 0, .6);
+}
+.toggle-R { border-color: var(--rag-R); } .toggle-A { border-color: var(--rag-A); } .toggle-G { border-color: var(--rag-G); }
+.toggle-head { font-weight: bold; font-size: 17px; }
+.toggle-text { font-size: 15px; line-height: 1.35; }
+.toggle[aria-pressed="false"] { opacity: .55; background: var(--leather); color: var(--scroll-text); box-shadow: none; border-style: dashed; }
+.toggle[aria-pressed="false"] .toggle-head::after { content: " (hidden)"; font-weight: normal; font-size: 14px; }
+.toggle:focus-visible { outline: 2px solid var(--gold-light); outline-offset: 2px; }
+.score .hint { margin: 8px 0 0; font-style: italic; font-size: 15px; }
+#nothing { margin: 12px 0 0; font-style: italic; color: var(--gold-light); }
+.hide-R .row-R, .hide-A .row-A, .hide-G .row-G { display: none; }
 .score h2 { font-size: 18px; font-variant: small-caps; letter-spacing: .05em; color: var(--gold-light); margin: 8px 0 4px; }
 .score ul { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
 .jump {
@@ -102,6 +117,7 @@ code { font-family: "Courier New", Courier, ui-monospace, monospace; color: var(
        background: #000; border: 1px solid var(--gold-dark); padding: 1px 6px; }
 @media (max-width: 600px) {
   main { margin: 0; padding: 24px 16px 32px; border-width: 5px; }
+  .score .legend { grid-template-columns: 1fr; }
   dl { grid-template-columns: minmax(100px, 38%) minmax(0, 1fr); }
   dl > dd.note { grid-column: 1 / -1; margin-top: 0; }
 }
