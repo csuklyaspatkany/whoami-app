@@ -32,6 +32,11 @@ const server = http.createServer((req, res) => {
   res.end("Not found");
 });
 
-server.listen(PORT, "127.0.0.1", () => {
-  console.log(`WhoAmI running at http://localhost:${PORT}`);
-});
+// Only listen when run directly; tests require() the server and pick their own port.
+if (require.main === module) {
+  server.listen(PORT, "127.0.0.1", () => {
+    console.log(`WhoAmI running at http://localhost:${PORT}`);
+  });
+}
+
+module.exports = server;

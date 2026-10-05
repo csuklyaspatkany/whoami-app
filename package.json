@@ -1,0 +1,12 @@
+{
+  "name": "whoami-app",
+  "private": true,
+  "description": "See what your browser reveals to every website",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
