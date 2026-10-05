@@ -21,6 +21,24 @@ for (const route of ["/", "/index.html"]) {
   });
 }
 
+for (const [route, type, marker] of [
+  ["/styles.css", "text/css; charset=utf-8", /--accent/],
+  ["/app.js", "text/javascript; charset=utf-8", /function section\(/],
+]) {
+  test(`GET ${route} serves the page asset`, async () => {
+    const res = await fetch(base + route);
+    assert.equal(res.status, 200);
+    assert.equal(res.headers.get("content-type"), type);
+    assert.match(await res.text(), marker);
+  });
+}
+
+test("files outside the asset list are not served", async () => {
+  for (const route of ["/server.js", "/package.json", "/test/server.test.js"]) {
+    assert.equal((await fetch(base + route)).status, 404, route);
+  }
+});
+
 test("GET / asks for detailed User-Agent Client Hints", async () => {
   const res = await fetch(base + "/");
   await res.text();
