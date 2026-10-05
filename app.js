@@ -18,7 +18,6 @@ const STATUS = { R: "Red: exposes personal data", A: "Amber: could be tightened"
 const ORDER = "GAR";
 const ctx = { browser: navigator.brave ? "Brave" : browserName(navigator.userAgent), language: navigator.language };
 const rated = [];
-let noteId = 0;
 
 function badge(status, label) {
   const b = document.createElement("span");
@@ -29,33 +28,18 @@ function badge(status, label) {
   return b;
 }
 
-// A badge button that shows or hides the note row for one value.
-function ratedRow(dt, k, res, tag = "dd") {
+// The note column for one value: why it got this rating, and how to fix it.
+function ratedNote(res, tag = "dd") {
   const note = document.createElement(tag);
   note.className = `note note-${res.status}`;
-  note.id = `note-${++noteId}`;
-  note.hidden = true;
   note.innerHTML = "<strong>Why:</strong> <span></span><br><strong>Fix:</strong> <span></span>";
   const [why, fix] = note.querySelectorAll("span");
   why.textContent = res.why; fix.textContent = res.fix;
-  const btn = document.createElement("button");
-  btn.type = "button";
-  btn.append(badge(res.status));
-  btn.className = "rag-btn";
-  btn.setAttribute("aria-expanded", "false");
-  btn.setAttribute("aria-controls", note.id);
-  btn.setAttribute("aria-label", `${STATUS[res.status]}. Show note for ${k}`);
-  btn.onclick = () => {
-    note.hidden = !note.hidden;
-    btn.setAttribute("aria-expanded", String(!note.hidden));
-  };
-  dt.prepend(btn);
-  return { note, btn };
+  return note;
 }
 
-function section(title, rows, wide) {
+function section(title, rows) {
   const s = document.createElement("section");
-  if (wide) s.className = "wide";
   s.innerHTML = `<h2>${title}</h2>`;
   const dl = document.createElement("dl");
   let worst = "G";
@@ -70,8 +54,9 @@ function section(title, rows, wide) {
       all[`${title}.${k}`] = val;
     }
     const res = rate(title, k, val, ctx);
-    const { note, btn } = ratedRow(dt, k, res);
-    rated.push({ title, label: k, status: res.status, note, btn });
+    dt.prepend(badge(res.status, STATUS[res.status]));
+    const note = ratedNote(res);
+    rated.push({ title, label: k, status: res.status, dt });
     if (ORDER.indexOf(res.status) > ORDER.indexOf(worst)) worst = res.status;
     dl.append(dt, dd, note);
   }
@@ -99,10 +84,8 @@ function scorecard() {
     a.type = "button"; a.className = "jump";
     a.textContent = `${x.title}: ${x.label}`;
     a.onclick = () => {
-      x.note.hidden = false;
-      x.btn.setAttribute("aria-expanded", "true");
-      x.btn.scrollIntoView({ behavior: "smooth", block: "center" });
-      x.btn.focus({ preventScroll: true });
+      x.dt.scrollIntoView({ behavior: "smooth", block: "center" });
+      x.dt.classList.remove("flash"); void x.dt.offsetWidth; x.dt.classList.add("flash");
     };
     const li = document.createElement("li"); li.append(a);
     ul.append(li);
@@ -159,7 +142,7 @@ async function main() {
     "Automated (webdriver)": yes(n.webdriver),
     "Referrer": document.referrer,
     "History length": history.length,
-  }, true);
+  });
 
   if (n.userAgentData) {
     const hi = await n.userAgentData.getHighEntropyValues(
@@ -248,9 +231,9 @@ async function main() {
       "Port": r.remotePort,
       "HTTP version": r.httpVersion,
       ...Object.fromEntries(Object.entries(r.headers).map(([k, v]) => [k, v])),
-    }, true);
+    });
   } catch {
-    section("What the server sees", { "Error": "Could not reach /api/request" }, true);
+    section("What the server sees", { "Error": "Could not reach /api/request" });
   }
 
   scorecard();
@@ -260,6 +243,6 @@ async function main() {
   document.getElementById("fp").textContent =
     [...new Uint8Array(hash)].map(b => b.toString(16).padStart(2, "0")).join("").slice(0, 32);
   const fpLine = document.getElementById("fp-line");
-  fpLine.after(ratedRow(fpLine, "Fingerprint", rate("Fingerprint", "Hash", "", ctx), "p").note);
+  fpLine.after(ratedNote(rate("Fingerprint", "Hash", "", ctx), "p"));
 }
 main();
