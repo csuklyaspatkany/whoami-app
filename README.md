@@ -2,7 +2,7 @@
 
 A single page that shows what your browser tells every website it visits without asking: user agent, screen size, time zone, language, hardware hints, preferences, and the request headers the server receives. At the end it combines all of these into a fingerprint hash, which shows how a site could recognize your browser again without cookies.
 
-Every value also gets a privacy rating: **G** (green, fine as is), **A** (amber, could be tightened to protect your privacy) or **R** (red, exposes personal data). Each row has a third column that says why it got that rating and how to fix it in the browser you're using. A summary at the top counts the ratings and links to every red item.
+Every value also gets a privacy rating: **G** (green, fine as is), **A** (amber, could be tightened to protect your privacy) or **R** (red, exposes personal data). Each row has a third column that says why it got that rating and how to fix it in the browser you're using. A legend at the top explains what each rating means and counts the rows for it. Each rating is also a toggle: switch one off to hide those rows, for example to see only the amber and red items. Every red item gets a link in a "Top fixes" list.
 
 Nothing leaves your machine. The server listens on `127.0.0.1` only and just echoes your own request back to you.
 
