@@ -49,3 +49,7 @@ They start the server on a random free port, so they work even while the app is 
 - The fingerprint shown is the first 32 hex characters of a SHA-256 hash over every value on the page.
 - The "Advanced fingerprinting" card runs the probes sites use: canvas, audio, installed fonts, layout measurements, the WebRTC local address and ad-blocker detection. They all run locally. A browser that adds noise or blocks them shows Green. The WebRTC check uses no STUN server, so it can't see your public address behind a VPN.
 - Not covered, because they need an outside server or access below the browser: public IP lookup (ISP and location), DNS leak tests, TLS (JA3/JA4) fingerprints and the TCP/IP stack fingerprint. The server only sees plain HTTP on localhost, and the page makes no third-party requests.
+
+## License
+
+[MIT](LICENSE)
