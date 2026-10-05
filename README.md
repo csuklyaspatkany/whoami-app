@@ -20,10 +20,21 @@ To use a different port, set `PORT`:
 PORT=8080 node server.js
 ```
 
+## Run the tests
+
+The tests use Node's built-in test runner, so there's nothing to install:
+
+```bash
+npm test
+```
+
+They start the server on a random free port, so they work even while the app is running on port 3000. GitHub Actions runs them on every pull request.
+
 ## Files
 
 - `server.js`: a small HTTP server with no dependencies. It serves the page and exposes `/api/request`, which returns the IP, port, HTTP version, and headers it saw for your request.
 - `index.html`: the page. It reads standard browser APIs, calls `/api/request`, and renders the results.
+- `test/server.test.js`: HTTP tests for every route the server handles.
 
 ## Notes
 
