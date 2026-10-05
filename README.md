@@ -36,7 +36,7 @@ They start the server on a random free port, so they work even while the app is 
 
 - `server.js`: a small HTTP server with no dependencies. It serves the page and exposes `/api/request`, which returns the IP, port, HTTP version, and headers it saw for your request.
 - `index.html`: the page markup.
-- `styles.css`: the page styles, including dark mode.
+- `styles.css`: the page styles (a retro fantasy theme, with no images or web fonts).
 - `app.js`: the page logic. It reads standard browser APIs, calls `/api/request`, and renders the results.
 - `ratings.js`: the privacy rating rules, one per row, with fix notes per browser.
 - `test/server.test.js`: HTTP tests for every route the server handles.
