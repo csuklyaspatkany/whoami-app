@@ -1,30 +1,73 @@
+/* Retro fantasy theme, after zagor.hu: stone wall, gold frame, parchment cards,
+   leather tags, red headings, Garamond. Pure CSS, no images or web fonts. */
 :root {
-  --bg: #f6f5f1; --card: #ffffff; --text: #1d1c1a; --muted: #6b6862;
-  --line: #e4e1da; --accent: #c2410c; --chip: #f1ede4;
-}
-@media (prefers-color-scheme: dark) {
-  :root { --bg: #151413; --card: #1f1e1c; --text: #ece9e3; --muted: #9c978e;
-          --line: #2f2d2a; --accent: #fb923c; --chip: #2a2825; }
+  --stone: #1c1b1d; --leather: #2a1a10; --leather-2: #3d2615;
+  --gold: #ddaf37; --gold-light: #f6d878; --gold-dark: #7a5512;
+  --parchment: #f3e2b5; --parchment-edge: #d9bb7a; --ink: #2a1a0e;
+  --ink-muted: #6b4a2b; --red: #c60002; --scroll-text: #e9d8a6;
 }
 * { box-sizing: border-box; }
-body { margin: 0; background: var(--bg); color: var(--text);
-       font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
-main { max-width: 1100px; margin: 0 auto; padding: 32px 16px 64px; }
-header h1 { font-size: clamp(28px, 5vw, 44px); margin: 0 0 6px; letter-spacing: -0.02em; }
-header p { margin: 0; color: var(--muted); max-width: 70ch; }
-.summary { display: flex; flex-wrap: wrap; gap: 8px; margin: 20px 0 28px; }
-.chip { background: var(--chip); border: 1px solid var(--line); border-radius: 999px;
-        padding: 4px 12px; font-size: 13px; }
-.grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); }
-section { background: var(--card); border: 1px solid var(--line); border-radius: 12px;
-          padding: 16px 18px; min-width: 0; }
-section h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em;
-             color: var(--accent); margin: 0 0 10px; }
+body {
+  margin: 0; color: var(--ink);
+  font: 16px/1.5 Garamond, "EB Garamond", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+  background-color: var(--stone);
+  background-image:
+    radial-gradient(ellipse at 15% 20%, rgba(120, 140, 170, .10), transparent 45%),
+    radial-gradient(ellipse at 85% 75%, rgba(120, 140, 170, .08), transparent 50%),
+    radial-gradient(circle at 50% 50%, transparent 55%, rgba(0, 0, 0, .7)),
+    repeating-linear-gradient(115deg, rgba(255, 255, 255, .025) 0 2px, transparent 2px 9px),
+    repeating-linear-gradient(25deg, rgba(0, 0, 0, .18) 0 3px, transparent 3px 13px);
+  background-attachment: fixed;
+}
+main {
+  max-width: 1100px; margin: 24px auto 48px; padding: 32px 28px 40px;
+  background:
+    radial-gradient(ellipse at top left, rgba(160, 90, 30, .25), transparent 60%),
+    linear-gradient(160deg, var(--leather-2), var(--leather));
+  border: 8px solid;
+  border-image: linear-gradient(135deg, var(--gold-light), var(--gold-dark) 25%, var(--gold) 50%,
+                                var(--gold-dark) 75%, var(--gold-light)) 1;
+  box-shadow: 0 0 0 2px #000, 0 10px 40px rgba(0, 0, 0, .8), inset 0 0 60px rgba(0, 0, 0, .6);
+}
+header { text-align: center; padding-bottom: 18px; border-bottom: 2px solid var(--gold-dark); }
+header h1 {
+  font-size: clamp(34px, 6vw, 58px); margin: 0 0 8px; letter-spacing: .06em;
+  font-variant: small-caps; color: var(--gold-light);
+  text-shadow: -2px -2px 0 #3a1d00, 2px -2px 0 #3a1d00, -2px 2px 0 #3a1d00, 2px 2px 0 #3a1d00,
+               0 0 18px rgba(221, 175, 55, .55), 4px 5px 4px #000;
+}
+header p { margin: 0 auto; color: var(--scroll-text); font-style: italic; max-width: 70ch; }
+.summary { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 22px 0 28px; }
+.chip {
+  background: linear-gradient(var(--leather-2), var(--leather)); color: var(--gold);
+  border: 1px solid var(--gold-dark); border-radius: 3px; padding: 4px 12px; font-size: 14px;
+  box-shadow: inset 0 0 0 1px rgba(246, 216, 120, .15), 0 2px 4px rgba(0, 0, 0, .6);
+}
+.grid { display: grid; gap: 20px; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); }
+section {
+  background: radial-gradient(ellipse at center, var(--parchment) 55%, var(--parchment-edge));
+  border-radius: 4px; padding: 18px 20px; min-width: 0;
+  box-shadow: inset 0 0 28px rgba(120, 70, 20, .55), inset 0 0 4px rgba(90, 50, 10, .6),
+              0 4px 12px rgba(0, 0, 0, .7);
+}
+section h2 {
+  font-size: 20px; font-weight: bold; font-variant: small-caps; letter-spacing: .05em;
+  text-align: center; color: var(--red); margin: 0 0 12px;
+  border-bottom: 1px solid rgba(122, 85, 18, .4); padding-bottom: 6px;
+}
+section h2::before { content: "\2619\00a0"; color: var(--gold-dark); }
+section h2::after { content: "\00a0\2767"; color: var(--gold-dark); }
 dl { display: grid; grid-template-columns: minmax(110px, 40%) 1fr; gap: 6px 12px; margin: 0; }
-dt { color: var(--muted); font-size: 13px; }
-dd { margin: 0; font-family: ui-monospace, "Cascadia Code", Consolas, monospace; font-size: 13px;
-     overflow-wrap: anywhere; }
+dt { color: var(--ink-muted); font-style: italic; font-size: 15px; }
+dd { margin: 0; font-family: "Courier New", Courier, ui-monospace, monospace; font-size: 13px;
+     color: var(--ink); overflow-wrap: anywhere; }
 .wide { grid-column: 1 / -1; }
-dd.volatile { color: var(--muted); }
-footer { margin-top: 28px; color: var(--muted); font-size: 13px; }
-code { font-family: ui-monospace, Consolas, monospace; }
+dd.volatile { color: rgba(107, 74, 43, .6); }
+footer { margin-top: 32px; padding-top: 16px; border-top: 2px solid var(--gold-dark);
+         color: var(--scroll-text); font-size: 15px; text-align: center; }
+code { font-family: "Courier New", Courier, ui-monospace, monospace; color: var(--gold-light);
+       background: #000; border: 1px solid var(--gold-dark); padding: 1px 6px; }
+@media (max-width: 600px) {
+  main { margin: 0; padding: 24px 16px 32px; border-width: 5px; }
+  .grid { grid-template-columns: 1fr; }
+}
