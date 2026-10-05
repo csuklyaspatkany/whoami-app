@@ -38,6 +38,33 @@ const rate = (() => {
       Brave: "Brave limits this; keep Shields on.",
       default: "Only Chromium browsers expose this without asking. Firefox, Safari and Brave don't.",
     },
+    fonts: {
+      Firefox: "Set privacy.resistFingerprinting to true in about:config, which limits the fonts sites can see to a standard set.",
+      Brave: "Shields → Fingerprinting blocking: Strict.",
+      Safari: "Safari already limits web-visible fonts to a standard set; update Safari and keep advanced fingerprinting protection on.",
+      default: "Use a browser with fingerprinting protection (Brave, Firefox with resistFingerprinting, or Tor Browser), which limits the fonts sites can see.",
+    },
+    webrtc: {
+      Firefox: "Set media.peerconnection.ice.default_address_only to true in about:config, or media.peerconnection.enabled to false (this breaks video calls).",
+      Brave: "Settings → Privacy and security → WebRTC IP handling policy: Disable non-proxied UDP.",
+      Chrome: "Install uBlock Origin and turn on Settings → Privacy → Prevent WebRTC from leaking local IP addresses.",
+      "Microsoft Edge": "Install uBlock Origin and turn on Settings → Privacy → Prevent WebRTC from leaking local IP addresses.",
+      default: "Turn off WebRTC, or restrict it to the proxy, in your browser or with a privacy extension such as uBlock Origin.",
+    },
+    adblock: {
+      Brave: "Shields → Trackers & ads blocking: Aggressive.",
+      Firefox: "Settings → Privacy & Security → Enhanced Tracking Protection: Strict, and add uBlock Origin.",
+      Safari: "Add a content blocker from the App Store, and keep Prevent cross-site tracking on.",
+      default: "Install uBlock Origin, or use a browser with built-in blocking such as Brave.",
+    },
+    storage: {
+      Firefox: "Settings → Privacy & Security → Enhanced Tracking Protection: Strict (turns on Total Cookie Protection), and tick Delete cookies and site data when Firefox is closed.",
+      Chrome: "Settings → Privacy and security → Third-party cookies: Block, and under Site settings → Cookies turn on Clear cookies and site data when you close all windows.",
+      "Microsoft Edge": "Settings → Cookies and site permissions → Manage and delete cookies and site data: turn on Block third-party cookies and Clear on exit.",
+      Safari: "Settings → Privacy → Prevent cross-site tracking, and clear website data now and then.",
+      Brave: "Shields → Block cookies: Cross-site, and Settings → Cookies and other site data → Clear cookies and site data when you close all windows.",
+      default: "Block third-party cookies, and clear site data when you close the browser.",
+    },
     vpn: { default: "Use a VPN, Tor Browser, or a relay such as iCloud Private Relay, so sites see the relay's address instead of yours." },
     referrer: {
       Firefox: "Firefox trims cross-site referrers to the origin by default; to send only the origin everywhere, set network.http.referer.XOriginTrimmingPolicy to 2 in about:config.",
@@ -150,6 +177,31 @@ const rate = (() => {
     "Capabilities.USB API": () => ok("Present, but sites must ask before using it."),
     "Capabilities.Media devices": () => ok("Only counts are shared; names stay hidden until you grant camera or microphone access."),
     "Capabilities.Storage quota": v => na(v) ? ok("Not shared.") : r("A", "Storage size reflects your disk size and can reveal private browsing.", "resist"),
+
+    "Capabilities.Storage APIs": v => v === "none"
+      ? ok("Web storage is blocked, so sites can't keep an identifier on your device. Many sites will break.")
+      : r("A", "Sites can keep an identifier in this storage, which lasts until you clear site data and can be used to recognise you again.", "storage"),
+
+    "Advanced fingerprinting.Canvas": v => /^(noise added|blocked)$/.test(v)
+      ? ok(v === "blocked" ? "This browser refuses canvas readback, so it can't be used to track you." : "This browser adds noise to canvas readback, so the result isn't a reliable ID.")
+      : fingerprint("Sites draw hidden text and shapes and hash the result. Tiny differences from your graphics card, drivers and fonts make it a lasting ID that needs no cookies."),
+    "Advanced fingerprinting.Audio": v => /^(randomized each time|blocked|n\/a)$/.test(v)
+      ? ok(v === "n/a" ? "Not available, so nothing is revealed." : "This browser blocks or randomizes audio processing, so the result isn't a reliable ID.")
+      : fingerprint("Sites render a silent sound and hash the output. Small differences in your audio stack make it a lasting ID."),
+    "Advanced fingerprinting.Fonts": v => Number(/^(\d+) of/.exec(v)?.[1] ?? 0) <= 4
+      ? ok("Few fonts are visible, which matches a browser that limits the font list.")
+      : r("A", "Sites can tell which fonts are installed by measuring text. Your list of installed fonts is a highly unique signature.", "fonts"),
+    "Advanced fingerprinting.DOM rects": v => v === "randomized each time"
+      ? ok("This browser jitters layout measurements, so the result isn't a reliable ID.")
+      : fingerprint("Sub-pixel layout measurements differ slightly between browser engines, systems and font settings, and sites can hash them."),
+    "Advanced fingerprinting.WebRTC local IP": v => /^(n\/a|blocked|hidden \(mDNS\)|none found)$/.test(v)
+      ? ok(v === "hidden (mDNS)"
+        ? "Your local address is hidden behind a random .local name. This page doesn't contact a STUN server, so it can't check your public address behind a VPN."
+        : "No local network address is exposed.")
+      : r("R", "WebRTC hands out your local network address without asking, and sites can also use it to find your real public address behind a VPN. This page doesn't contact a STUN server, so it only checks the local address.", "webrtc"),
+    "Advanced fingerprinting.Ad/tracker blocker": v => v === "detected"
+      ? ok("A content blocker is hiding ad elements, so many trackers can't load. The blocker itself is slightly identifying, but the protection is worth it.")
+      : r("A", "Nothing is hiding ad elements, so most ad and tracking scripts can run.", "adblock"),
 
     "What the server sees.Your IP": v => r("R",
       "Every site you visit sees this address. It reveals your internet provider and rough location, and links your visits across sites."

@@ -10,6 +10,7 @@ const volatile = new Set([
   "Network & power.Online", "Network & power.Connection type", "Network & power.Downlink (approx.)",
   "Network & power.Round-trip (approx.)", "Network & power.Battery", "Network & power.Charging",
   "Capabilities.Storage quota",
+  "Advanced fingerprinting.WebRTC local IP",
   "What the server sees",
 ]);
 
@@ -146,6 +147,130 @@ function webgl() {
   } catch { return {}; }
 }
 
+// Fingerprinting probes. Each runs locally, makes no network requests, and returns a short
+// string: a hash, a count, or a word such as "blocked" or "randomized each time".
+async function sha(text) {
+  const h = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
+  return [...new Uint8Array(h)].map(b => b.toString(16).padStart(2, "0")).join("").slice(0, 16);
+}
+
+async function canvasProbe() {
+  try {
+    const c = document.createElement("canvas"); c.width = 240; c.height = 60;
+    const g = c.getContext("2d");
+    // A flat colour reads back exactly on an untouched canvas; browsers that add noise change it.
+    g.fillStyle = "rgb(12, 34, 56)"; g.fillRect(0, 0, 20, 20);
+    const px = g.getImageData(0, 0, 20, 20).data;
+    for (let i = 0; i < px.length; i += 4) {
+      if (px[i] !== 12 || px[i + 1] !== 34 || px[i + 2] !== 56 || px[i + 3] !== 255) return "noise added";
+    }
+    g.font = "16px Arial"; g.fillStyle = "#f60"; g.fillRect(100, 1, 60, 20);
+    g.fillStyle = "#069"; g.fillText("WhoAmI canvas 🙂 Ωß", 2, 40);
+    g.strokeStyle = "rgba(102, 204, 0, .7)"; g.beginPath(); g.arc(180, 30, 20, 0, Math.PI * 2); g.stroke();
+    return await sha(c.toDataURL());
+  } catch { return "blocked"; }
+}
+
+async function audioProbe() {
+  const Ctx = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+  if (!Ctx) return "n/a";
+  const render = async () => {
+    const ctx = new Ctx(1, 5000, 44100);
+    const osc = ctx.createOscillator(); osc.type = "triangle"; osc.frequency.value = 10000;
+    const comp = ctx.createDynamicsCompressor();
+    osc.connect(comp); comp.connect(ctx.destination); osc.start(0);
+    const out = (await ctx.startRendering()).getChannelData(0);
+    let sum = 0; for (let i = 4500; i < out.length; i++) sum += Math.abs(out[i]);
+    return sum;
+  };
+  try {
+    const a = await render(), b = await render();
+    return a !== b ? "randomized each time" : a.toFixed(8);
+  } catch { return "blocked"; }
+}
+
+const TEST_FONTS = ["Arial", "Arial Black", "Calibri", "Cambria", "Candara", "Comic Sans MS", "Consolas",
+  "Constantia", "Corbel", "Courier New", "Franklin Gothic Medium", "Gabriola", "Georgia", "Impact",
+  "Lucida Console", "Lucida Sans Unicode", "Microsoft Sans Serif", "Palatino Linotype", "Segoe UI",
+  "Segoe Print", "Sylfaen", "Tahoma", "Times New Roman", "Trebuchet MS", "Verdana", "Century Gothic",
+  "Bookman Old Style", "Garamond", "MS Gothic", "Meiryo", "Helvetica", "Helvetica Neue", "Menlo", "Monaco",
+  "Optima", "Futura", "Gill Sans", "Avenir", "Geneva", "Lucida Grande", "Hoefler Text", "Apple Chancery",
+  "Ubuntu", "DejaVu Sans", "Liberation Sans", "Noto Sans", "Roboto", "Cantarell", "Droid Sans"];
+
+// A font counts as installed if text set in it measures differently from the generic fallback.
+function fontsProbe() {
+  const span = document.createElement("span");
+  span.textContent = "mmmmmmmmmmlliWWQ@#0123";
+  span.style.cssText = "position:absolute;left:-9999px;font-size:72px;visibility:hidden";
+  document.body.append(span);
+  const width = family => { span.style.fontFamily = family; return span.offsetWidth; };
+  const generic = ["monospace", "serif", "sans-serif"];
+  const base = generic.map(width);
+  const found = TEST_FONTS.filter(f => generic.some((g, i) => width(`"${f}", ${g}`) !== base[i]));
+  span.remove();
+  return `${found.length} of ${TEST_FONTS.length} tested${found.length ? ": " + found.join(", ") : ""}`;
+}
+
+async function rectsProbe() {
+  const measure = () => {
+    const box = document.createElement("div");
+    box.style.cssText = "position:absolute;left:-9999px;width:33.3333px;font:13.37px Arial;line-height:1.37;letter-spacing:.07px";
+    box.innerHTML = "<span>Whoami rect probe 0.1 + 0.2</span><br><small>fractional sizes</small>";
+    document.body.append(box);
+    const out = [...box.children].map(e => e.getBoundingClientRect()).map(r => `${r.width},${r.height}`).join(";");
+    box.remove();
+    return out;
+  };
+  const a = measure(), b = measure();
+  return a !== b ? "randomized each time" : await sha(a);
+}
+
+// Gathers WebRTC candidates without any STUN server, so nothing leaves this machine. Browsers
+// that hide local addresses behind random .local names report only "hidden (mDNS)".
+function webrtcProbe() {
+  const RTC = window.RTCPeerConnection || window.webkitRTCPeerConnection;
+  if (!RTC) return "n/a";
+  return new Promise(resolve => {
+    const found = new Set(); let mdns = false, pc;
+    const done = () => {
+      clearTimeout(timer);
+      try { pc.close(); } catch {}
+      resolve(found.size ? [...found].join(", ") : mdns ? "hidden (mDNS)" : "none found");
+    };
+    const timer = setTimeout(() => done(), 1500);
+    try { pc = new RTC({ iceServers: [] }); } catch { clearTimeout(timer); return resolve("blocked"); }
+    pc.onicecandidate = e => {
+      if (!e.candidate) return done();
+      const m = /candidate:\S+ \d+ \w+ \d+ (\S+) \d+ typ/.exec(e.candidate.candidate);
+      if (m) /\.local$/.test(m[1]) ? (mdns = true) : found.add(m[1]);
+    };
+    pc.createDataChannel("probe");
+    pc.createOffer().then(o => pc.setLocalDescription(o)).catch(() => done());
+  });
+}
+
+// Content blockers hide elements with ad-like class names, which gives them away.
+async function adBlockProbe() {
+  const bait = document.createElement("div");
+  bait.className = "adsbox ad-banner pub_300x250 textads banner-ad";
+  bait.style.cssText = "position:absolute;left:-9999px;width:10px;height:10px";
+  bait.innerHTML = "&nbsp;";
+  document.body.append(bait);
+  await new Promise(r => setTimeout(r, 150));
+  const hidden = bait.offsetHeight === 0 || getComputedStyle(bait).display === "none";
+  bait.remove();
+  return hidden ? "detected" : "not detected";
+}
+
+function storageApis() {
+  const ok = [];
+  for (const name of ["localStorage", "sessionStorage"]) {
+    try { if (window[name]) { void window[name].length; ok.push(name); } } catch {}
+  }
+  if (window.indexedDB) ok.push("IndexedDB");
+  return ok.join(", ") || "none";
+}
+
 async function main() {
   const n = navigator, ua = n.userAgent;
   const tz = Intl.DateTimeFormat().resolvedOptions();
@@ -249,6 +374,16 @@ async function main() {
       .reduce((acc, d) => (acc[d.kind] = (acc[d.kind] || 0) + 1, acc), {}))
       .map(([k, v]) => `${v} ${k}`).join(", ") : "n/a",
     "Storage quota": await n.storage?.estimate?.().then(e => `${(e.quota / 1e9).toFixed(1)} GB`).catch(() => "n/a"),
+    "Storage APIs": storageApis(),
+  });
+
+  section("Advanced fingerprinting", {
+    "Canvas": await canvasProbe(),
+    "Audio": await audioProbe(),
+    "Fonts": fontsProbe(),
+    "DOM rects": await rectsProbe(),
+    "WebRTC local IP": await webrtcProbe(),
+    "Ad/tracker blocker": await adBlockProbe(),
   });
 
   try {

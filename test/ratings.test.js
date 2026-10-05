@@ -69,3 +69,43 @@ test("fixes are tailored to the browser", () => {
   assert.match(fix("Microsoft Edge"), /Cookies and site permissions/);
   assert.match(fix("Opera"), /privacy settings/);
 });
+
+test("fingerprinting probes are Amber when exposed and Green when protected", () => {
+  const probe = (label, v) => status("Advanced fingerprinting", label, v);
+  assert.equal(probe("Canvas", "9f2c4d1e8a7b6c50"), "A");
+  assert.equal(probe("Canvas", "noise added"), "G");
+  assert.equal(probe("Canvas", "blocked"), "G");
+  assert.equal(probe("Audio", "124.04347527"), "A");
+  assert.equal(probe("Audio", "randomized each time"), "G");
+  assert.equal(probe("Audio", "n/a"), "G");
+  assert.equal(probe("DOM rects", "9f2c4d1e8a7b6c50"), "A");
+  assert.equal(probe("DOM rects", "randomized each time"), "G");
+});
+
+test("fonts are Amber once more than a few are visible", () => {
+  assert.equal(status("Advanced fingerprinting", "Fonts", "0 of 49 tested"), "G");
+  assert.equal(status("Advanced fingerprinting", "Fonts", "3 of 49 tested: Arial, Verdana, Georgia"), "G");
+  assert.equal(status("Advanced fingerprinting", "Fonts", "27 of 49 tested: Arial, Calibri"), "A");
+});
+
+test("an exposed WebRTC local IP is Red; hidden or unavailable is Green", () => {
+  const probe = v => status("Advanced fingerprinting", "WebRTC local IP", v);
+  assert.equal(probe("192.168.1.23"), "R");
+  assert.equal(probe("192.168.1.23, fe80::1"), "R");
+  for (const v of ["hidden (mDNS)", "none found", "blocked", "n/a"]) assert.equal(probe(v), "G", v);
+});
+
+test("ad blocker and storage rows", () => {
+  assert.equal(status("Advanced fingerprinting", "Ad/tracker blocker", "detected"), "G");
+  assert.equal(status("Advanced fingerprinting", "Ad/tracker blocker", "not detected"), "A");
+  assert.equal(status("Capabilities", "Storage APIs", "none"), "G");
+  assert.equal(status("Capabilities", "Storage APIs", "localStorage, sessionStorage, IndexedDB"), "A");
+});
+
+test("new rows get fixes tailored to the browser", () => {
+  const fix = (title, label, v, browser) => rate(title, label, v, { browser, language: "en" }).fix;
+  assert.match(fix("Advanced fingerprinting", "WebRTC local IP", "10.0.0.5", "Firefox"), /media\.peerconnection/);
+  assert.match(fix("Advanced fingerprinting", "WebRTC local IP", "10.0.0.5", "Brave"), /WebRTC IP handling policy/);
+  assert.match(fix("Advanced fingerprinting", "Ad/tracker blocker", "not detected", "Safari"), /content blocker/);
+  assert.match(fix("Capabilities", "Storage APIs", "localStorage", "Opera"), /third-party cookies/i);
+});
