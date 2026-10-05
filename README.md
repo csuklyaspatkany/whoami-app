@@ -16,6 +16,8 @@ node server.js
 
 Then open <http://localhost:3000>.
 
+On Windows, `restart-server.ps1` starts the server, or restarts it if it is already running, and opens the page. It only stops a process on the port if that process is running `server.js`. To get a desktop shortcut, create one that runs `powershell.exe -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File "<path to>estart-server.ps1"`.
+
 To use a different port, set `PORT`:
 
 ```bash
@@ -34,6 +36,7 @@ They start the server on a random free port, so they work even while the app is 
 
 ## Files
 
+- `restart-server.ps1`: Windows script that starts or restarts the server and opens the page.
 - `server.js`: a small HTTP server with no dependencies. It serves the page and exposes `/api/request`, which returns the IP, port, HTTP version, and headers it saw for your request.
 - `index.html`: the page markup.
 - `styles.css`: the page styles, including dark mode.
