@@ -10,6 +10,7 @@ const page = path.join(__dirname, "index.html");
 const assets = {
   "/styles.css": { file: path.join(__dirname, "styles.css"), type: "text/css; charset=utf-8" },
   "/app.js": { file: path.join(__dirname, "app.js"), type: "text/javascript; charset=utf-8" },
+  "/ratings.js": { file: path.join(__dirname, "ratings.js"), type: "text/javascript; charset=utf-8" },
 };
 
 const server = http.createServer((req, res) => {

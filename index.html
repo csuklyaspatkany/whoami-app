@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>WhoAmI</title>
 <link rel="stylesheet" href="/styles.css">
+<script src="/ratings.js" defer></script>
 <script src="/app.js" defer></script>
 </head>
 <body>
@@ -15,8 +16,9 @@
        It all comes from standard web APIs and the request headers. Everything stays on this machine.</p>
   </header>
   <div class="summary" id="summary"></div>
+  <div class="score" id="score" aria-live="polite"></div>
   <div class="grid" id="grid"></div>
-  <footer>Fingerprint (SHA-256 of the stable values above): <code id="fp">…</code><br>
+  <footer><span id="fp-line">Fingerprint (SHA-256 of the stable values above): <code id="fp">…</code></span><br>
     Sites can combine these values to recognize your browser again without cookies.
     Greyed-out values change between visits, so they're left out.</footer>
 </main>

@@ -24,6 +24,7 @@ for (const route of ["/", "/index.html"]) {
 for (const [route, type, marker] of [
   ["/styles.css", "text/css; charset=utf-8", /--parchment/],
   ["/app.js", "text/javascript; charset=utf-8", /function section\(/],
+  ["/ratings.js", "text/javascript; charset=utf-8", /const rate = /],
 ]) {
   test(`GET ${route} serves the page asset`, async () => {
     const res = await fetch(base + route);
