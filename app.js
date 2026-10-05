@@ -13,11 +13,52 @@ const volatile = new Set([
   "What the server sees",
 ]);
 
+// Privacy ratings (from ratings.js). They never touch `all`, so the fingerprint is unaffected.
+const STATUS = { R: "Red: exposes personal data", A: "Amber: could be tightened", G: "Green: fine as is" };
+const ORDER = "GAR";
+const ctx = { browser: navigator.brave ? "Brave" : browserName(navigator.userAgent), language: navigator.language };
+const rated = [];
+let noteId = 0;
+
+function badge(status, label) {
+  const b = document.createElement("span");
+  b.className = `rag rag-${status}`;
+  b.textContent = status;
+  b.title = STATUS[status];
+  if (label) b.setAttribute("aria-label", label);
+  return b;
+}
+
+// A badge button that shows or hides the note row for one value.
+function ratedRow(dt, k, res, tag = "dd") {
+  const note = document.createElement(tag);
+  note.className = `note note-${res.status}`;
+  note.id = `note-${++noteId}`;
+  note.hidden = true;
+  note.innerHTML = "<strong>Why:</strong> <span></span><br><strong>Fix:</strong> <span></span>";
+  const [why, fix] = note.querySelectorAll("span");
+  why.textContent = res.why; fix.textContent = res.fix;
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.append(badge(res.status));
+  btn.className = "rag-btn";
+  btn.setAttribute("aria-expanded", "false");
+  btn.setAttribute("aria-controls", note.id);
+  btn.setAttribute("aria-label", `${STATUS[res.status]}. Show note for ${k}`);
+  btn.onclick = () => {
+    note.hidden = !note.hidden;
+    btn.setAttribute("aria-expanded", String(!note.hidden));
+  };
+  dt.prepend(btn);
+  return { note, btn };
+}
+
 function section(title, rows, wide) {
   const s = document.createElement("section");
   if (wide) s.className = "wide";
   s.innerHTML = `<h2>${title}</h2>`;
   const dl = document.createElement("dl");
+  let worst = "G";
   for (const [k, v] of Object.entries(rows)) {
     const val = v === undefined || v === null || v === "" ? "n/a" : String(v);
     const dt = document.createElement("dt"); dt.textContent = k;
@@ -28,10 +69,45 @@ function section(title, rows, wide) {
     } else {
       all[`${title}.${k}`] = val;
     }
-    dl.append(dt, dd);
+    const res = rate(title, k, val, ctx);
+    const { note, btn } = ratedRow(dt, k, res);
+    rated.push({ title, label: k, status: res.status, note, btn });
+    if (ORDER.indexOf(res.status) > ORDER.indexOf(worst)) worst = res.status;
+    dl.append(dt, dd, note);
   }
+  s.querySelector("h2").append(badge(worst, `Worst rating in this card: ${STATUS[worst]}`));
   s.append(dl);
   grid.append(s);
+}
+
+// Counts per status, plus a jump link to every Red row.
+function scorecard() {
+  const el = document.getElementById("score");
+  const count = s => rated.filter(x => x.status === s).length;
+  el.innerHTML = `<p class="counts"></p>`;
+  for (const s of "RAG") {
+    const c = document.createElement("span");
+    c.append(badge(s), ` ${count(s)} ${STATUS[s].split(":")[0]}`);
+    el.firstChild.append(c);
+  }
+  const reds = rated.filter(x => x.status === "R");
+  if (!reds.length) return;
+  const h = document.createElement("h2"); h.textContent = "Top fixes";
+  const ul = document.createElement("ul");
+  for (const x of reds) {
+    const a = document.createElement("button");
+    a.type = "button"; a.className = "jump";
+    a.textContent = `${x.title}: ${x.label}`;
+    a.onclick = () => {
+      x.note.hidden = false;
+      x.btn.setAttribute("aria-expanded", "true");
+      x.btn.scrollIntoView({ behavior: "smooth", block: "center" });
+      x.btn.focus({ preventScroll: true });
+    };
+    const li = document.createElement("li"); li.append(a);
+    ul.append(li);
+  }
+  el.append(h, ul);
 }
 
 const mq = q => matchMedia(q).matches;
@@ -177,9 +253,13 @@ async function main() {
     section("What the server sees", { "Error": "Could not reach /api/request" }, true);
   }
 
+  scorecard();
+
   const bytes = new TextEncoder().encode(JSON.stringify(all));
   const hash = await crypto.subtle.digest("SHA-256", bytes);
   document.getElementById("fp").textContent =
     [...new Uint8Array(hash)].map(b => b.toString(16).padStart(2, "0")).join("").slice(0, 32);
+  const fpLine = document.getElementById("fp-line");
+  fpLine.after(ratedRow(fpLine, "Fingerprint", rate("Fingerprint", "Hash", "", ctx), "p").note);
 }
 main();

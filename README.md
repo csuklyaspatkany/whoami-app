@@ -2,6 +2,8 @@
 
 A single page that shows what your browser tells every website it visits without asking: user agent, screen size, time zone, language, hardware hints, preferences, and the request headers the server receives. At the end it combines all of these into a fingerprint hash, which shows how a site could recognize your browser again without cookies.
 
+Every value also gets a privacy rating: **G** (green, fine as is), **A** (amber, could be tightened to protect your privacy) or **R** (red, exposes personal data). Click or tap a badge to see why, and how to fix it in the browser you're using. A summary at the top counts the ratings and links to every red item.
+
 Nothing leaves your machine. The server listens on `127.0.0.1` only and just echoes your own request back to you.
 
 ## Run it
@@ -36,7 +38,9 @@ They start the server on a random free port, so they work even while the app is 
 - `index.html`: the page markup.
 - `styles.css`: the page styles, including dark mode.
 - `app.js`: the page logic. It reads standard browser APIs, calls `/api/request`, and renders the results.
+- `ratings.js`: the privacy rating rules, one per row, with fix notes per browser.
 - `test/server.test.js`: HTTP tests for every route the server handles.
+- `test/ratings.test.js`: tests for the rating rules.
 
 ## Notes
 
