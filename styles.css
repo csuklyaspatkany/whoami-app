@@ -25,5 +25,6 @@ dt { color: var(--muted); font-size: 13px; }
 dd { margin: 0; font-family: ui-monospace, "Cascadia Code", Consolas, monospace; font-size: 13px;
      overflow-wrap: anywhere; }
 .wide { grid-column: 1 / -1; }
+dd.volatile { color: var(--muted); }
 footer { margin-top: 28px; color: var(--muted); font-size: 13px; }
 code { font-family: ui-monospace, Consolas, monospace; }
