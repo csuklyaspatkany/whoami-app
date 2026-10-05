@@ -9,7 +9,7 @@
 * { box-sizing: border-box; }
 body {
   margin: 0; color: var(--ink);
-  font: 16px/1.5 Garamond, "EB Garamond", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+  font: 19px/1.5 Garamond, "EB Garamond", "Palatino Linotype", "Book Antiqua", Georgia, serif;
   background-color: var(--stone);
   background-image:
     radial-gradient(ellipse at 15% 20%, rgba(120, 140, 170, .10), transparent 45%),
@@ -36,11 +36,11 @@ header h1 {
   text-shadow: -2px -2px 0 #3a1d00, 2px -2px 0 #3a1d00, -2px 2px 0 #3a1d00, 2px 2px 0 #3a1d00,
                0 0 18px rgba(221, 175, 55, .55), 4px 5px 4px #000;
 }
-header p { margin: 0 auto; color: var(--scroll-text); font-style: italic; max-width: 70ch; }
+header p { margin: 0 auto; color: var(--scroll-text); font-size: 20px; max-width: 70ch; }
 .summary { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 22px 0 28px; }
 .chip {
   background: linear-gradient(var(--leather-2), var(--leather)); color: var(--gold);
-  border: 1px solid var(--gold-dark); border-radius: 3px; padding: 4px 12px; font-size: 14px;
+  border: 1px solid var(--gold-dark); border-radius: 3px; padding: 4px 12px; font-size: 17px;
   box-shadow: inset 0 0 0 1px rgba(246, 216, 120, .15), 0 2px 4px rgba(0, 0, 0, .6);
 }
 .grid { display: grid; gap: 20px; grid-template-columns: 1fr; }
@@ -51,32 +51,32 @@ section {
               0 4px 12px rgba(0, 0, 0, .7);
 }
 section h2 {
-  font-size: 20px; font-weight: bold; font-variant: small-caps; letter-spacing: .05em;
+  font-size: 25px; font-weight: bold; font-variant: small-caps; letter-spacing: .05em;
   text-align: center; color: var(--red); margin: 0 0 12px;
   border-bottom: 1px solid rgba(122, 85, 18, .4); padding-bottom: 6px;
 }
 section h2::before { content: "\2619\00a0"; color: var(--gold-dark); }
 section h2::after { content: "\00a0\2767"; color: var(--gold-dark); }
 /* Three columns: label (with rating badge), value, and the Why / Fix note. */
-dl { display: grid; grid-template-columns: minmax(150px, 22%) minmax(0, 1fr) minmax(0, 1.4fr);
+dl { display: grid; grid-template-columns: minmax(170px, 22%) minmax(0, 1fr) minmax(0, 1.4fr);
      gap: 0; margin: 0; }
 dl > dt, dl > dd { padding: 7px 16px 7px 0; border-bottom: 1px solid rgba(122, 85, 18, .22); }
 dl > dt:last-of-type, dl > dd:last-child, dl > dd:nth-last-child(2) { border-bottom: 0; }
-dt { color: var(--ink-muted); font-style: italic; font-size: 15px; }
-dd { margin: 0; font-family: "Courier New", Courier, ui-monospace, monospace; font-size: 13px;
+dt { color: var(--ink-muted); font-size: 18px; }
+dd { margin: 0; font-family: "Courier New", Courier, ui-monospace, monospace; font-size: 15px;
      color: var(--ink); overflow-wrap: anywhere; }
 dd.volatile { color: rgba(107, 74, 43, .6); }
 /* Privacy ratings: a lettered badge (never colour alone) that opens a note under the row. */
 :root { --rag-G: #2f6b2a; --rag-A: #a85f00; --rag-R: var(--red); }
 .rag {
   display: inline-block; min-width: 1.45em; padding: 0 .3em; border-radius: 3px;
-  font: bold 12px/1.45 Georgia, serif; font-style: normal; text-align: center; color: #fff;
+  font: bold 14px/1.45 Georgia, serif; font-style: normal; text-align: center; color: #fff;
   vertical-align: middle; box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .25);
 }
 .rag-G { background: var(--rag-G); } .rag-A { background: var(--rag-A); } .rag-R { background: var(--rag-R); }
 section h2 .rag { margin-left: 8px; font-variant: normal; letter-spacing: 0; }
 dd.note {
-  font-size: 15px; line-height: 1.4; padding: 6px 10px; margin: 0; border-left: 4px solid;
+  font-size: 18px; line-height: 1.4; padding: 6px 10px; margin: 0; border-left: 4px solid;
   font-family: Garamond, "EB Garamond", "Palatino Linotype", "Book Antiqua", Georgia, serif;
   background: rgba(255, 250, 230, .55); border-radius: 2px;
   border-bottom: 1px solid rgba(122, 85, 18, .22); border-bottom-left-radius: 0;
@@ -95,24 +95,24 @@ footer p.note { max-width: 70ch; margin: 8px auto; text-align: left; color: var(
   box-shadow: inset 0 0 18px rgba(120, 70, 20, .45), 0 2px 6px rgba(0, 0, 0, .6);
 }
 .toggle-R { border-color: var(--rag-R); } .toggle-A { border-color: var(--rag-A); } .toggle-G { border-color: var(--rag-G); }
-.toggle-head { font-weight: bold; font-size: 17px; }
-.toggle-text { font-size: 15px; line-height: 1.35; }
+.toggle-head { font-weight: bold; font-size: 21px; }
+.toggle-text { font-size: 18px; line-height: 1.35; }
 .toggle[aria-pressed="false"] { opacity: .55; background: var(--leather); color: var(--scroll-text); box-shadow: none; border-style: dashed; }
-.toggle[aria-pressed="false"] .toggle-head::after { content: " (hidden)"; font-weight: normal; font-size: 14px; }
+.toggle[aria-pressed="false"] .toggle-head::after { content: " (hidden)"; font-weight: normal; font-size: 17px; }
 .toggle:focus-visible { outline: 2px solid var(--gold-light); outline-offset: 2px; }
-.score .hint { margin: 8px 0 0; font-style: italic; font-size: 15px; }
-#nothing { margin: 12px 0 0; font-style: italic; color: var(--gold-light); }
+.score .hint { margin: 8px 0 0; font-size: 18px; }
+#nothing { margin: 12px 0 0; font-size: 18px; color: var(--gold-light); }
 .hide-R .row-R, .hide-A .row-A, .hide-G .row-G { display: none; }
-.score h2 { font-size: 18px; font-variant: small-caps; letter-spacing: .05em; color: var(--gold-light); margin: 8px 0 4px; }
+.score h2 { font-size: 22px; font-variant: small-caps; letter-spacing: .05em; color: var(--gold-light); margin: 8px 0 4px; }
 .score ul { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
 .jump {
-  font: inherit; font-size: 14px; cursor: pointer; color: var(--gold-light);
+  font: inherit; font-size: 17px; cursor: pointer; color: var(--gold-light);
   background: linear-gradient(var(--leather-2), var(--leather)); border: 1px solid var(--rag-R);
   border-radius: 3px; padding: 3px 10px;
 }
 .jump:focus-visible { outline: 2px solid var(--gold-light); outline-offset: 2px; }
 footer { margin-top: 32px; padding-top: 16px; border-top: 2px solid var(--gold-dark);
-         color: var(--scroll-text); font-size: 15px; text-align: center; }
+         color: var(--scroll-text); font-size: 18px; text-align: center; }
 code { font-family: "Courier New", Courier, ui-monospace, monospace; color: var(--gold-light);
        background: #000; border: 1px solid var(--gold-dark); padding: 1px 6px; }
 @media (max-width: 600px) {
