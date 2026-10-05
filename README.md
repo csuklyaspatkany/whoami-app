@@ -33,7 +33,9 @@ They start the server on a random free port, so they work even while the app is 
 ## Files
 
 - `server.js`: a small HTTP server with no dependencies. It serves the page and exposes `/api/request`, which returns the IP, port, HTTP version, and headers it saw for your request.
-- `index.html`: the page. It reads standard browser APIs, calls `/api/request`, and renders the results.
+- `index.html`: the page markup.
+- `styles.css`: the page styles, including dark mode.
+- `app.js`: the page logic. It reads standard browser APIs, calls `/api/request`, and renders the results.
 - `test/server.test.js`: HTTP tests for every route the server handles.
 
 ## Notes

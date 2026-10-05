@@ -6,6 +6,11 @@ const path = require("path");
 
 const PORT = process.env.PORT || 3000;
 const page = path.join(__dirname, "index.html");
+// The page's own assets. An explicit list, so no other file on disk is reachable.
+const assets = {
+  "/styles.css": { file: path.join(__dirname, "styles.css"), type: "text/css; charset=utf-8" },
+  "/app.js": { file: path.join(__dirname, "app.js"), type: "text/javascript; charset=utf-8" },
+};
 
 const server = http.createServer((req, res) => {
   if (req.url === "/api/request") {
@@ -27,6 +32,10 @@ const server = http.createServer((req, res) => {
       "Accept-CH": "Sec-CH-UA-Platform-Version, Sec-CH-UA-Arch, Sec-CH-UA-Model, Sec-CH-UA-Full-Version-List",
     });
     return fs.createReadStream(page).pipe(res);
+  }
+  if (assets[req.url]) {
+    res.writeHead(200, { "Content-Type": assets[req.url].type });
+    return fs.createReadStream(assets[req.url].file).pipe(res);
   }
   res.writeHead(404, { "Content-Type": "text/plain" });
   res.end("Not found");
