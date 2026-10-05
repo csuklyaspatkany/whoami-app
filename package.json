@@ -1,6 +1,7 @@
 {
   "name": "whoami-app",
   "private": true,
+  "license": "MIT",
   "description": "See what your browser reveals to every website",
   "scripts": {
     "start": "node server.js",
